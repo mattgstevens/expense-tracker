@@ -1,0 +1,38 @@
+{
+  "name": "expenses",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "immutable": "^3.8.1"
+  },
+  "devDependencies": {
+    "ava": "^0.15.2",
+    "eslint": "^3.2.0",
+    "eslint-config-airbnb": "^9.0.1",
+    "eslint-plugin-import": "^1.12.0",
+    "eslint-plugin-jsx-a11y": "^2.0.1",
+    "eslint-plugin-react": "^5.2.2",
+    "nyc": "^7.1.0",
+    "testcheck": "^0.1.4"
+  },
+  "scripts": {
+    "coverage": "nyc report",
+    "lint": "eslint .",
+    "start": "NODE_ENV=cli node index.js",
+    "test": "nyc ava",
+    "test:watch": "ava --watch"
+  },
+  "ava": {
+    "concurrency": 5
+  },
+  "keywords": [
+    "expenses",
+    "maths",
+    "why is my wallet so light?"
+  ],
+  "author": "mattgstevens",
+  "license": "ISC"
+}

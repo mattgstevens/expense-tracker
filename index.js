@@ -5,9 +5,17 @@ const maths = require('./lib/maths');
 
 // Data Api
 
-// addMonth :: String -> Map -> Map
-const addMonth = (month, data) => (
-  data.set(month, Immutable.List())
+const ExpenseRecord = Immutable.Record({
+  cost: 0,
+  date: null,
+  tags: Immutable.List(),
+});
+
+// createExpenseListWithGroupInfo :: List -> Map -> List<ExpenseRecord>
+const createExpenseListWithGroupInfo = (costs, groupInfo) => (
+  Immutable.List(costs.map(
+    (x) => (new ExpenseRecord(Object.assign({}, groupInfo, { cost: x })))
+  ))
 );
 
 // addExpensesForMonth :: List -> String -> Map -> Map
@@ -24,6 +32,11 @@ const addExpensesForMonth = (costs, month, data) => {
   const update = data.get(month).concat(costs);
   return data.setIn([month], update);
 };
+
+// addMonth :: String -> Map -> Map
+const addMonth = (month, data) => (
+  data.set(month, Immutable.List())
+);
 
 // sumAllMonths :: Map -> Map
 //
@@ -58,7 +71,9 @@ module.exports = {
   // data api
   addExpensesForMonth,
   addMonth,
+  createExpenseListWithGroupInfo,
   sumAllMonths,
+  ExpenseRecord,
 
   // persistance
   loadData,

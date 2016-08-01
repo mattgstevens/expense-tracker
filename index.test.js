@@ -42,3 +42,21 @@ test('expenses.sumAllMonths returns Immutable.Map with keys as months and values
     t.true(actual.get(k) === v)
   ));
 });
+
+test('expenses.createExpenseListWithGroupInfo', (t) => {
+  const mockData = {
+    costs: [1],
+    groupInfo: {
+      date: '202001',
+      tags: ['dinner', 'indian'],
+    },
+  };
+
+  const expected = Immutable.List([new expenses.ExpenseRecord({
+    cost: mockData.costs[0],
+    date: mockData.groupInfo.date,
+    tags: mockData.groupInfo.tags,
+  })]);
+  const actual = expenses.createExpenseListWithGroupInfo(mockData.costs, mockData.groupInfo);
+  t.true(Immutable.is(actual, expected));
+});

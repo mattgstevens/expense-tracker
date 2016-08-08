@@ -21,7 +21,7 @@
   "scripts": {
     "coverage": "nyc report",
     "lint": "eslint .",
-    "start": "NODE_ENV=cli node index.js",
+    "repl": "node repl.js",
     "test": "nyc ava",
     "test:watch": "ava --watch"
   },

@@ -57,15 +57,9 @@ const saveData = (data) => {
 // loadData :: _ -> Map
 const loadData = () => (
   Immutable.fromJS(JSON.parse(
-    fs.readFileSync('./data.json', { encoding: 'utf8' })
+    fs.readFileSync('./data.json', { encoding: 'utf8' }).replace(/\n/g, '').trim() || '{}'
   ))
 );
-
-// Main
-(function main() {
-  if (process.env.NODE_ENV !== 'cli') { return; }
-  console.log(sumAllMonths(loadData())); // eslint-disable-line no-console
-}());
 
 module.exports = {
   // data api

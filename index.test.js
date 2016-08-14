@@ -3,60 +3,111 @@ const test = require('ava');
 
 const expenses = require('./index');
 
-const mockMonths = () => (Immutable.fromJS({
-  201603: [1, 2, 3],
-  201604: [5, 6, 7],
-}));
-
-test('expenses.addExpensesForMonth returns a Immutable.Map with new month added as a key and Immutable.list of costs as value', (t) => { // eslint-disable-line max-len
-  const mockInput = {
-    costs: [1, 2, 3],
-    month: '202001',
+test('expenses.createExpenseRecord will ensure tags are an Immutable.List', (t) => {
+  // Wish there was a better way to do this, Immutable.Record only guarantees keys & default values
+  const mockData = {
+    cost: 1,
+    date: '20200101',
+    tags: ['dinner'],
   };
 
-  const expected = Immutable.fromJS({
-    202001: Immutable.List([1, 2, 3]),
+  const actual = expenses.createExpenseRecord(mockData);
+  const expected = expenses.ExpenseRecord({
+    cost: mockData.cost,
+    date: mockData.date,
+    tags: Immutable.List(mockData.tags),
   });
-  const actual = expenses.addExpensesForMonth(mockInput.costs, mockInput.month, Immutable.Map());
-  t.true(Immutable.Map.isMap(actual));
-  t.true(Immutable.is(expected, actual));
+  t.true(Immutable.is(actual, expected));
 });
 
-test('expenses.addMonth returns a Immutable.Map with the new month added as a key and an empty Immutable.List as value', (t) => { // eslint-disable-line max-len
-  const newMonth = '202001';
-  const actual = expenses.addMonth(newMonth, mockMonths());
-  t.true(Immutable.Map.isMap(actual));
-  t.true(Immutable.List.isList(actual.get(newMonth)));
-  t.true(actual.get(newMonth).isEmpty());
+test('expenses.createExpenseRecord will work without tags', (t) => {
+  const mockData = {
+    cost: 1,
+    date: '20200101',
+  };
+
+  const actual = expenses.createExpenseRecord(mockData);
+  const expected = expenses.ExpenseRecord({
+    cost: mockData.cost,
+    date: mockData.date,
+    tags: Immutable.List(),
+  });
+  t.true(Immutable.is(actual, expected));
 });
 
-test('expenses.sumAllMonths returns Immutable.Map with keys as months and values as summed month expenses', (t) => { // eslint-disable-line max-len
-  const expected = Immutable.fromJS({
-    201603: 6,
-    201604: 18,
-  });
-  const actual = expenses.sumAllMonths(mockMonths());
+test('expenses.expenseListCreateWithGroupInfo', (t) => {
+  const mockData = {
+    cost: 1,
+    groupInfo: {
+      date: '20200101',
+      tags: ['dinner', 'indian'],
+    },
+  };
 
-  t.true(Immutable.Map.isMap(actual));
+  const expected = Immutable.List([
+    expenses.createExpenseRecord({
+      cost: mockData.cost,
+      date: mockData.groupInfo.date,
+      tags: mockData.groupInfo.tags,
+    }),
+  ]);
+  const actual = expenses.expenseListCreateWithGroupInfo([mockData.cost], mockData.groupInfo);
+  t.true(Immutable.is(actual, expected));
+});
+
+test('expenses.expenseListGroupByMonth', (t) => {
+  const mockData = Immutable.List([
+    expenses.createExpenseRecord({ cost: 1, date: '20200101' }),
+    expenses.createExpenseRecord({ cost: 1, date: '20200201' }),
+  ]);
+
+  const actual = expenses.expenseListGroupByMonth(mockData);
+  const expected = Immutable.Map({
+    202001: Immutable.List([
+      expenses.createExpenseRecord({ cost: 1, date: '20200101' }),
+    ]),
+    202002: Immutable.List([
+      expenses.createExpenseRecord({ cost: 1, date: '20200201' }),
+    ]),
+  });
+  t.true(Immutable.is(actual, expected));
+});
+
+test('expenses.expenseListSumByMonth', (t) => {
+  const mockData = Immutable.List([
+    expenses.createExpenseRecord({ cost: 1, date: '20200101' }),
+    expenses.createExpenseRecord({ cost: 1, date: '20200105' }),
+  ]);
+
+  const actual = expenses.expenseListSumByMonth(mockData);
+  const expected = Immutable.Map({
+    202001: 2,
+  });
+
   expected.forEach((v, k) => (
     t.true(actual.get(k) === v)
   ));
 });
 
-test('expenses.createExpenseListWithGroupInfo', (t) => {
+test('expenses.expenseListUpdateWithTags', (t) => {
   const mockData = {
-    costs: [1],
-    groupInfo: {
-      date: '202001',
-      tags: ['dinner', 'indian'],
-    },
+    expenseList: Immutable.List([
+      expenses.createExpenseRecord({
+        cost: 1,
+        date: '20200101',
+        tags: ['groceries'],
+      }),
+    ]),
+    tags: ['neu bio GMO'],
   };
 
-  const expected = Immutable.List([new expenses.ExpenseRecord({
-    cost: mockData.costs[0],
-    date: mockData.groupInfo.date,
-    tags: mockData.groupInfo.tags,
-  })]);
-  const actual = expenses.createExpenseListWithGroupInfo(mockData.costs, mockData.groupInfo);
+  const actual = expenses.expenseListUpdateWithTags(mockData.expenseList, mockData.tags);
+  const expected = Immutable.List([
+    expenses.createExpenseRecord({
+      cost: 1,
+      date: '20200101',
+      tags: ['groceries', 'neu bio GMO'],
+    }),
+  ]);
   t.true(Immutable.is(actual, expected));
 });

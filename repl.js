@@ -51,6 +51,8 @@ const intializeContext = (context) => {
 
   // if we reloaded, get the latest
   context.Immutable = require('immutable'); // eslint-disable-line global-require
+  context.moment = require('moment'); // eslint-disable-line global-require
+
   context.expenses = require('./index'); // eslint-disable-line global-require
   context.data = context.expenses.loadData();
 

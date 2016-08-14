@@ -1,9 +1,12 @@
 const fs = require('fs');
 const Immutable = require('immutable');
+const moment = require('moment');
 
 const maths = require('./lib/maths');
 
-// Data Api
+//
+// Data Records
+//
 
 const ExpenseRecord = Immutable.Record({
   cost: 0,
@@ -11,43 +14,64 @@ const ExpenseRecord = Immutable.Record({
   tags: Immutable.List(),
 });
 
-// createExpenseListWithGroupInfo :: List -> Map -> List<ExpenseRecord>
-const createExpenseListWithGroupInfo = (costs, groupInfo) => (
-  Immutable.List(costs.map(
-    (x) => (new ExpenseRecord(Object.assign({}, groupInfo, { cost: x })))
+// createExpenseRecord :: [Map | Object] -> ExpenseRecord
+const createExpenseRecord = (expense) => (
+  Immutable.Map.isMap(expense) ? (
+    ExpenseRecord({
+      cost: expense.get('cost'),
+      date: expense.get('date'),
+      tags: Immutable.List(expense.get('tags')),
+    })
+  ) : (
+    ExpenseRecord({
+      cost: expense.cost,
+      date: expense.date,
+      tags: Immutable.List(expense.tags),
+    })
+  )
+);
+
+//
+// Data Api
+//
+
+// expenseListCreateWithGroupInfo :: List -> Map -> List<ExpenseRecord>
+const expenseListCreateWithGroupInfo = (costs, groupInfo) => (
+  Immutable.List(costs.map((cost) => createExpenseRecord({
+    cost,
+    date: groupInfo.date,
+    tags: Immutable.List(groupInfo.tags),
+  })))
+);
+
+// expenseListUpdateWithTags :: List<ExpenseRecord> -> List -> List<ExpenseRecord>
+const expenseListUpdateWithTags = (expenseList, tags) => (
+  expenseList.map((expense) => (
+    expense.set('tags', expense.get('tags').concat(tags))
   ))
 );
 
-// addExpensesForMonth :: List -> String -> Map -> Map
-const addExpensesForMonth = (costs, month, data) => {
-  if (!data.has(month)) {
-    data = addMonth(month, data); // eslint-disable-line no-param-reassign
-  }
+// TODO: max, min, average costs, => by tag, by day of week, by month
 
-  // allow single expense to be added
-  if (!Array.isArray(costs) && !Immutable.List.isList(costs) && !isNaN(costs)) {
-    costs = [costs]; // eslint-disable-line no-param-reassign
-  }
-
-  const update = data.get(month).concat(costs);
-  return data.setIn([month], update);
-};
-
-// addMonth :: String -> Map -> Map
-const addMonth = (month, data) => (
-  data.set(month, Immutable.List())
+const expenseListGroupByMonth = (expenseList) => (
+  expenseList.reduce((acc, expense) => {
+    const dateKey = moment(expense.get('date')).format('YYYYMM');
+    return (acc.has(dateKey))
+      ? acc.set(dateKey, acc.get(dateKey).push(expense))
+      : acc.set(dateKey, Immutable.List([expense]));
+  }, Immutable.Map())
 );
 
-// sumAllMonths :: Map -> Map
+// sumAllMonths :: List<ExpenseRecord> -> Map[month: costSum]
+const expenseListSumByMonth = (expenseList) => (
+  expenseListGroupByMonth(expenseList).map((expenseListForMonth) => (
+    maths.sum(expenseListForMonth.map((expense) => expense.get('cost')))
+  ))
+);
+
 //
-// monthSet: Map(k, v) => k(Keyword month), v(Map of named costs)
-const sumAllMonths = (monthSet) => (
-  monthSet.reduce((acc, expenses, month) => (
-    acc.set(month, maths.sum(expenses))
-  ), Immutable.Map())
-);
-
-// Data Persistence
+// Storage Api
+//
 
 // saveData :: Map -> IO effect
 const saveData = (data) => {
@@ -58,18 +82,21 @@ const saveData = (data) => {
 const loadData = () => (
   Immutable.fromJS(JSON.parse(
     fs.readFileSync('./data.json', { encoding: 'utf8' }).replace(/\n/g, '').trim() || '{}'
-  ))
+  ).map((expense) => createExpenseRecord(expense)))
 );
 
 module.exports = {
-  // data api
-  addExpensesForMonth,
-  addMonth,
-  createExpenseListWithGroupInfo,
-  sumAllMonths,
+  // Data Records
   ExpenseRecord,
+  createExpenseRecord,
 
-  // persistance
+  // Data Api
+  expenseListCreateWithGroupInfo,
+  expenseListGroupByMonth,
+  expenseListSumByMonth,
+  expenseListUpdateWithTags,
+
+  // Storage Api
   loadData,
   saveData,
 };

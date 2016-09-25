@@ -8,9 +8,10 @@ const maths = require('./lib/maths');
 // Data Records
 //
 
+// immutable record doesnt set defaults when a value is present and it is nil
 const ExpenseRecord = Immutable.Record({
   cost: 0,
-  date: null,
+  date: moment().format('YYYYMMDD'),
   tags: Immutable.List(),
 });
 
@@ -18,15 +19,15 @@ const ExpenseRecord = Immutable.Record({
 const createExpenseRecord = (expense) => (
   Immutable.Map.isMap(expense) ? (
     ExpenseRecord({
-      cost: expense.get('cost'),
-      date: expense.get('date'),
-      tags: Immutable.List(expense.get('tags')),
+      cost: expense.get('cost') || 0,
+      date: expense.get('date') || moment().format('YYYYMMDD'),
+      tags: expense.has('tags') ? Immutable.List(expense.get('tags')) : Immutable.List(),
     })
   ) : (
     ExpenseRecord({
-      cost: expense.cost,
-      date: expense.date,
-      tags: Immutable.List(expense.tags),
+      cost: expense.cost || 0,
+      date: expense.date || moment().format('YYYYMMDD'),
+      tags: expense.tags ? Immutable.List(expense.tags) : Immutable.List(),
     })
   )
 );
@@ -40,7 +41,7 @@ const expenseListCreateWithGroupInfo = (costs, groupInfo) => (
   Immutable.List(costs.map((cost) => createExpenseRecord({
     cost,
     date: groupInfo.date,
-    tags: Immutable.List(groupInfo.tags),
+    tags: groupInfo.tags,
   })))
 );
 
@@ -58,7 +59,7 @@ const expenseListGroupByMonth = (expenseList) => (
     const dateKey = moment(expense.get('date')).format('YYYYMM');
     return (acc.has(dateKey))
       ? acc.set(dateKey, acc.get(dateKey).push(expense))
-      : acc.set(dateKey, Immutable.List([expense]));
+      : acc.set(dateKey, Immutable.List.of(expense));
   }, Immutable.Map())
 );
 

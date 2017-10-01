@@ -11,18 +11,15 @@
   },
   "devDependencies": {
     "ava": "^0.15.2",
-    "eslint": "^3.2.0",
-    "eslint-config-airbnb": "^9.0.1",
-    "eslint-plugin-import": "^1.12.0",
-    "eslint-plugin-jsx-a11y": "^2.0.1",
-    "eslint-plugin-react": "^5.2.2",
     "nyc": "^7.1.0",
     "pre-push": "^0.1.1",
+    "prettier": "^1.2.1",
     "testcheck": "^0.1.4"
   },
   "scripts": {
     "coverage": "nyc report",
     "lint": "eslint .",
+    "prettier": "prettier --single-quote --trailing-comma es5 --write index*.js --write \"lib/**/*.js\"",
     "repl": "node repl.js",
     "test": "nyc ava",
     "test:watch": "ava --watch"

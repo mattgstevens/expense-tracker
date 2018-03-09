@@ -18,14 +18,12 @@
   },
   "scripts": {
     "coverage": "nyc report",
-    "lint": "eslint .",
     "prettier": "prettier --single-quote --trailing-comma es5 --write index*.js --write \"lib/**/*.js\"",
     "repl": "node repl.js",
     "test": "nyc ava",
     "test:watch": "ava --watch"
   },
   "pre-push": [
-    "lint",
     "test"
   ],
   "ava": {

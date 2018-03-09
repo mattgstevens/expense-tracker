@@ -6,15 +6,15 @@
     "doc": "docs"
   },
   "dependencies": {
-    "immutable": "^3.8.1",
-    "moment": "^2.14.1"
+    "immutable": "4.x",
+    "moment": "2.x"
   },
   "devDependencies": {
-    "ava": "^0.15.2",
-    "nyc": "^7.1.0",
-    "pre-push": "^0.1.1",
-    "prettier": "^1.11.1",
-    "testcheck": "^0.1.4"
+    "ava": "1.x",
+    "nyc": "11.x",
+    "pre-push": "0.x",
+    "prettier": "1.x",
+    "testcheck": "1.x"
   },
   "scripts": {
     "coverage": "nyc report",

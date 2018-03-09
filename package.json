@@ -13,7 +13,7 @@
     "ava": "^0.15.2",
     "nyc": "^7.1.0",
     "pre-push": "^0.1.1",
-    "prettier": "^1.2.1",
+    "prettier": "^1.11.1",
     "testcheck": "^0.1.4"
   },
   "scripts": {
